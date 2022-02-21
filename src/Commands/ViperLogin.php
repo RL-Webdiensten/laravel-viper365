@@ -45,9 +45,9 @@ class ViperLogin extends Command
         $password = $this->secret('password');
 
         $result = $this->service->authenticateUser($username, $password);
-        if($result){
+        if ($result) {
             $this->info("Successfully logged in to Viper365 as $username!");
-        }else{
+        } else {
             $this->error("Could not login to Viper365, please try again!");
         }
 

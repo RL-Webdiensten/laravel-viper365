@@ -14,18 +14,18 @@ class LaravelViper
 {
     protected ViperConfig $config;
 
-    function __construct(ViperConfig $config)
+    public function __construct(ViperConfig $config)
     {
         $this->config = $config;
     }
 
-    function authenticateUser($username, $password): bool
+    public function authenticateUser($username, $password): bool
     {
         $result = $this->makePostRequest("AuthenticateUser", [
             "Username" => $username,
-            "Password" => $password
+            "Password" => $password,
         ]);
-        if (!isset($result['RefreshToken'], $result['Jwt'], $result['ExpiresIn'])) {
+        if (! isset($result['RefreshToken'], $result['Jwt'], $result['ExpiresIn'])) {
             return false;
         }
 
@@ -41,7 +41,7 @@ class LaravelViper
     {
         $uri = "RefreshToken?token=".urlencode($this->config->getRefreshToken());
         $result = $this->makePostRequest($uri, [], true);
-        if (!isset($result['Jwt'], $result['ExpiresIn'])) {
+        if (! isset($result['Jwt'], $result['ExpiresIn'])) {
             return false;
         }
 
@@ -52,31 +52,31 @@ class LaravelViper
         return true;
     }
 
-    public function getAllPersons() : array
+    public function getAllPersons(): array
     {
         return $this->makeGetRequest("Persons", true);
     }
 
-    public function getSinglePerson(int $userId) : array
+    public function getSinglePerson(int $userId): array
     {
         return $this->makeGetRequest("Persons/$userId", true);
     }
 
-    public function updatePerson(int $userId, array $userData) : array
+    public function updatePerson(int $userId, array $userData): array
     {
         return $this->makePatchRequest("Persons/$userId", $userData, true);
     }
 
-    public function createPerson(array $userData) : array
+    public function createPerson(array $userData): array
     {
         return $this->makePostRequest("Persons", $userData, true);
     }
 
-    public function makeGetRequest(string $uri, bool $includeJwt = false) : array
+    public function makeGetRequest(string $uri, bool $includeJwt = false): array
     {
         try {
             $client = $this->getClient($includeJwt);
-            if (!$client) {
+            if (! $client) {
                 return [];
             }
 
@@ -86,7 +86,7 @@ class LaravelViper
             }
 
             $result = self::convertIncomingResponseToArray($response);
-            if (!$result) {
+            if (! $result) {
                 return [];
             }
 
@@ -96,11 +96,11 @@ class LaravelViper
         }
     }
 
-    public function makePostRequest(string $uri, array $jsonBody, bool $includeJwt = false) : array
+    public function makePostRequest(string $uri, array $jsonBody, bool $includeJwt = false): array
     {
         try {
             $client = $this->getClient($includeJwt);
-            if (!$client) {
+            if (! $client) {
                 return [];
             }
 
@@ -110,7 +110,7 @@ class LaravelViper
             }
 
             $result = self::convertIncomingResponseToArray($response);
-            if (!$result) {
+            if (! $result) {
                 return [];
             }
 
@@ -120,11 +120,11 @@ class LaravelViper
         }
     }
 
-    public function makePatchRequest(string $uri, array $jsonBody, bool $includeJwt = false) : array
+    public function makePatchRequest(string $uri, array $jsonBody, bool $includeJwt = false): array
     {
         try {
             $client = $this->getClient($includeJwt);
-            if (!$client) {
+            if (! $client) {
                 return [];
             }
 
@@ -134,7 +134,7 @@ class LaravelViper
             }
 
             $result = self::convertIncomingResponseToArray($response);
-            if (!$result) {
+            if (! $result) {
                 return [];
             }
 
@@ -146,7 +146,7 @@ class LaravelViper
 
     private function getClient(bool $includeJwt = false): ?Client
     {
-        if (!$this->config->getApiKey()) {
+        if (! $this->config->getApiKey()) {
             return null;
         }
 
@@ -157,11 +157,11 @@ class LaravelViper
                 'Authorization-ApiKey' => $this->config->getApiKey(),
             ],
             'http_errors' => false,
-            'debug' => false
+            'debug' => false,
         ];
 
-        if ($includeJwt){
-            if (!$this->config->getJwtToken()) {
+        if ($includeJwt) {
+            if (! $this->config->getJwtToken()) {
                 return null;
             }
             $options['headers']['Authorization-JWT'] = $this->config->getJwtToken();
@@ -170,11 +170,12 @@ class LaravelViper
         return new Client($options);
     }
 
-    private static function convertIncomingResponseToArray(ResponseInterface $response) : ?array
+    private static function convertIncomingResponseToArray(ResponseInterface $response): ?array
     {
         try {
             $response->getBody()->rewind();
             $body = $response->getBody()->getContents();
+
             return json_decode($body, true, 10, JSON_THROW_ON_ERROR);
         } catch (Exception) {
             return null;
@@ -183,18 +184,21 @@ class LaravelViper
 
     private function getDateFromExpiry($expiresIn): int
     {
-        try{
+        try {
             $dateTime = new DateTime();
             $dateTime->add(new DateInterval("PT".$expiresIn."S"));
+
             return $dateTime->getTimestamp();
-        } catch (Exception){}
+        } catch (Exception) {
+        }
+
         return 0;
     }
 
-    public function checkToken() {
-        if (!$this->config->isTokenValid()) {
+    public function checkToken()
+    {
+        if (! $this->config->isTokenValid()) {
             $this->refreshToken();
         }
     }
-
 }
