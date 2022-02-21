@@ -42,7 +42,7 @@ class ViperRefresh extends Command
     public function handle()
     {
         $this->Service->checkToken();
+
         return 0;
     }
-
 }

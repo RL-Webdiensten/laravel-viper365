@@ -13,7 +13,7 @@ class LaravelViperConfig implements ViperConfig
     protected ?int $jwtExpires;
     protected ?string $refreshToken;
 
-    function __construct($apiKey, $jwtToken = null, $jwtExpires = null, $refreshToken = null)
+    public function __construct($apiKey, $jwtToken = null, $jwtExpires = null, $refreshToken = null)
     {
         $this->apiKey = $apiKey;
         $config = $this->loadConfig();
@@ -103,14 +103,16 @@ class LaravelViperConfig implements ViperConfig
     public function isTokenValid(): bool
     {
         $diff = Carbon::now()->diffInMinutes($this->getTokenExpireDate());
+
         return $diff > 5;
     }
 
     public function getTokenExpireDate(): Carbon
     {
-        if (!$this->jwtToken){
+        if (! $this->jwtToken) {
             return Carbon::now();
         }
+
         return Carbon::createFromTimestamp($this->jwtToken);
     }
 
@@ -122,5 +124,4 @@ class LaravelViperConfig implements ViperConfig
         $config->expires = $this->jwtExpires;
         Storage::put('viper.api.json', json_encode($config));
     }
-
 }

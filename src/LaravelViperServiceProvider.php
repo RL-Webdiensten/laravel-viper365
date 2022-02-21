@@ -22,10 +22,10 @@ class LaravelViperServiceProvider extends PackageServiceProvider
             ->hasCommand(ViperLogin::class)
             ->hasCommand(ViperRefresh::class);
 
-        $this->app->singleton(LaravelViper::class, function (){
+        $this->app->singleton(LaravelViper::class, function () {
             $config = new LaravelViperConfig(config('viper.api_token'));
+
             return new LaravelViper($config);
         });
-
     }
 }
