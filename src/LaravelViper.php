@@ -3,14 +3,14 @@
 namespace RlWebdiensten\LaravelViper;
 
 use Exception;
-use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use RlWebdiensten\LaravelViper\Contracts\ViperConfig;
 
 class LaravelViper
 {
-    public function __construct(protected ViperConfig $config, protected ClientInterface $client)
+    public function __construct(protected ViperConfig $config, protected Client $client)
     {
     }
 

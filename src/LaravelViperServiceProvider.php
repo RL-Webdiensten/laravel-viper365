@@ -2,8 +2,6 @@
 
 namespace RlWebdiensten\LaravelViper;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
 use RlWebdiensten\LaravelViper\Commands\ViperLogin;
 use RlWebdiensten\LaravelViper\Commands\ViperRefresh;
 use RlWebdiensten\LaravelViper\Contracts\ViperConfig;
@@ -26,10 +24,6 @@ class LaravelViperServiceProvider extends PackageServiceProvider
             ->hasCommand(ViperRefresh::class);
 
         $this->app->alias(LaravelViper::class, 'laravel-viper');
-
-        $this->app->when(LaravelViper::class)
-            ->needs(ClientInterface::class)
-            ->give(Client::class);
 
         $this->app->singleton(ViperConfig::class, function () {
             return new LaravelViperConfig(config('viper.api_token'));
