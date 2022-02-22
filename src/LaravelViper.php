@@ -2,21 +2,16 @@
 
 namespace RlWebdiensten\LaravelViper;
 
-use DateInterval;
-use DateTime;
 use Exception;
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use RlWebdiensten\LaravelViper\Contracts\ViperConfig;
 
 class LaravelViper
 {
-    protected ViperConfig $config;
-
-    public function __construct(ViperConfig $config)
+    public function __construct(protected ViperConfig $config, protected ClientInterface $client)
     {
-        $this->config = $config;
     }
 
     public function authenticateUser($username, $password): bool
@@ -80,15 +75,28 @@ class LaravelViper
         return $this->makePostRequest("Persons", $userData, true);
     }
 
+    private function getClientOptions(bool $includeJwt = false): array
+    {
+        $options = [
+            'base_uri' => 'https://basic-api.viper365.net/v2/',
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization-ApiKey' => $this->config->getApiKey(),
+            ],
+            'http_errors' => false,
+            'debug' => false,
+        ];
+        if ($includeJwt) {
+            $options['headers']['Authorization-JWT'] = $this->config->getJwtToken();
+        }
+
+        return $options;
+    }
+
     public function makeGetRequest(string $uri, bool $includeJwt = false): array
     {
         try {
-            $client = $this->getClient($includeJwt);
-            if (! $client) {
-                return [];
-            }
-
-            $response = $client->get($uri);
+            $response = $this->client->get($uri, $this->getClientOptions($includeJwt));
             if ($response->getStatusCode() !== 200) {
                 return [];
             }
@@ -107,12 +115,7 @@ class LaravelViper
     public function makePostRequest(string $uri, array $jsonBody, bool $includeJwt = false): array
     {
         try {
-            $client = $this->getClient($includeJwt);
-            if (! $client) {
-                return [];
-            }
-
-            $response = $client->post($uri, ['json' => $jsonBody]);
+            $response = $this->client->post($uri, array_merge($this->getClientOptions($includeJwt), ['json' => $jsonBody]));
             if ($response->getStatusCode() !== 200) {
                 return [];
             }
@@ -131,12 +134,7 @@ class LaravelViper
     public function makePatchRequest(string $uri, array $jsonBody, bool $includeJwt = false): array
     {
         try {
-            $client = $this->getClient($includeJwt);
-            if (! $client) {
-                return [];
-            }
-
-            $response = $client->patch($uri, ['json' => $jsonBody]);
+            $response = $this->client->patch($uri, array_merge($this->getClientOptions($includeJwt), ['json' => $jsonBody]));
             if ($response->getStatusCode() !== 200) {
                 return [];
             }
@@ -152,32 +150,6 @@ class LaravelViper
         }
     }
 
-    private function getClient(bool $includeJwt = false): ?Client
-    {
-        if (! $this->config->getApiKey()) {
-            return null;
-        }
-
-        $options = [
-            'base_uri' => 'https://basic-api.viper365.net/v2/',
-            'headers' => [
-                'Accept' => 'application/json',
-                'Authorization-ApiKey' => $this->config->getApiKey(),
-            ],
-            'http_errors' => false,
-            'debug' => false,
-        ];
-
-        if ($includeJwt) {
-            if (! $this->config->getJwtToken()) {
-                return null;
-            }
-            $options['headers']['Authorization-JWT'] = $this->config->getJwtToken();
-        }
-
-        return new Client($options);
-    }
-
     private static function convertIncomingResponseToArray(ResponseInterface $response): ?array
     {
         try {
@@ -190,17 +162,9 @@ class LaravelViper
         }
     }
 
-    private function getDateFromExpiry($expiresIn): int
+    private function getDateFromExpiry(int $expiresIn): int
     {
-        try {
-            $dateTime = new DateTime();
-            $dateTime->add(new DateInterval("PT".$expiresIn."S"));
-
-            return $dateTime->getTimestamp();
-        } catch (Exception) {
-        }
-
-        return 0;
+        return strtotime("+$expiresIn seconds");
     }
 
     public function checkToken()

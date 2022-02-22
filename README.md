@@ -33,8 +33,6 @@ return [
 
 Using the constructor
 ```php
-protected LaravelViper $viperService;
-
 function __construct()
 {
     $this->viperService = app()->make('RlWebdiensten\LaravelViper\LaravelViper');
