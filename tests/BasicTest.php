@@ -12,6 +12,15 @@ it('registers facade', function () {
 
 it('can check if token is valid', function () {
     $mock = Mockery::mock(ViperConfig::class);
+    $mock->shouldReceive('getApiKey')
+        ->once()
+        ->andReturn(true);
+    $mock->shouldReceive('getJwtToken')
+        ->once()
+        ->andReturn(true);
+    $mock->shouldReceive('getRefreshToken')
+        ->once()
+        ->andReturn(true);
     $mock->shouldReceive('isTokenValid')
         ->once()
         ->andReturn(true);
@@ -22,6 +31,15 @@ it('can check if token is valid', function () {
 
 it('can check if token is valid facade', function () {
     $mock = Mockery::mock(ViperConfig::class);
+    $mock->shouldReceive('getApiKey')
+        ->times(3)
+        ->andReturn(true);
+    $mock->shouldReceive('getJwtToken')
+        ->times(3)
+        ->andReturn(true);
+    $mock->shouldReceive('getRefreshToken')
+        ->times(3)
+        ->andReturn(true);
     $mock->shouldReceive('isTokenValid')
         ->times(3)
         ->andReturn(true);

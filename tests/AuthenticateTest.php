@@ -9,7 +9,7 @@ use RlWebdiensten\LaravelViper\LaravelViper;
 it('can authenticate the user', function () {
     $guzzleMock = Mockery::mock(Client::class);
     $guzzleMock
-        ->shouldReceive('post')
+        ->shouldReceive('request')
         ->andReturn(new Response(200, [], '{
             "UserName": "email@example.com",
             "Jwt": "jwttoken",
@@ -30,7 +30,7 @@ it('can authenticate the user', function () {
 it('does not authenticate when we get an 400 error', function () {
     $guzzleMock = Mockery::mock(Client::class);
     $guzzleMock
-        ->shouldReceive('post')
+        ->shouldReceive('request')
         ->andReturn(new Response(400, [], ''));
 
     app()->instance(Client::class, $guzzleMock);
@@ -46,7 +46,7 @@ it('does not authenticate when we get an 400 error', function () {
 it('does not authenticate when we get an empty body', function () {
     $guzzleMock = Mockery::mock(Client::class);
     $guzzleMock
-        ->shouldReceive('post')
+        ->shouldReceive('request')
         ->andReturn(new Response(200, [], ''));
 
     app()->instance(Client::class, $guzzleMock);
@@ -69,7 +69,7 @@ it('expects that config is updated on authenticate user', function () {
 
     $guzzleMock = Mockery::mock(Client::class);
     $guzzleMock
-        ->shouldReceive('post')
+        ->shouldReceive('request')
         ->andReturn(new Response(200, [], '{
             "UserName": "email@example.com",
             "Jwt": "jwttoken",
