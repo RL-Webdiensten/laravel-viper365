@@ -26,7 +26,7 @@ class LaravelViperServiceProvider extends PackageServiceProvider
         $this->app->alias(LaravelViper::class, 'laravel-viper');
 
         $this->app->singleton(ViperConfig::class, function () {
-            return new LaravelViperConfig(config('viper.api_token'));
+            return new LaravelViperConfig(strval(config('viper.api_token')));
         });
     }
 }

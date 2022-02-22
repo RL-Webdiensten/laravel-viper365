@@ -14,7 +14,7 @@ class ViperLogin extends Command
      *
      * @var string
      */
-    protected $signature = 'viper:login {username}';
+    protected $signature = 'viper:login';
 
     /**
      * The console command description.
@@ -41,8 +41,8 @@ class ViperLogin extends Command
      */
     public function handle()
     {
-        $username = $this->argument("username");
-        $password = $this->secret('password');
+        $username = strval($this->ask("Please type the username of the viper365 account"));
+        $password = strval($this->secret('Please type the password'));
 
         $result = $this->service->authenticateUser($username, $password);
         if ($result) {

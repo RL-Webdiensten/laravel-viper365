@@ -14,19 +14,23 @@ class LaravelViper
     {
     }
 
-    public function authenticateUser($username, $password): bool
+    public function authenticateUser(string $username, string $password): bool
     {
-        $result = $this->makePostRequest("AuthenticateUser", [
-            "Username" => $username,
-            "Password" => $password,
-        ]);
+        $result = $this->makeRequest(
+            "POST",
+            "AuthenticateUser",
+            [
+                "Username" => $username,
+                "Password" => $password,
+            ]
+        );
         if (! isset($result['RefreshToken'], $result['Jwt'], $result['ExpiresIn'])) {
             return false;
         }
 
         $this->config->setRefreshToken($result['RefreshToken']);
         $this->config->setJwtToken($result['Jwt']);
-        $this->config->setJwtExpires($this->getDateFromExpiry($result['ExpiresIn']));
+        $this->config->setJwtExpires($this->getTimeFromExpiry($result['ExpiresIn']));
         $this->config->saveConfig();
 
         return true;
@@ -34,14 +38,18 @@ class LaravelViper
 
     public function refreshToken(): bool
     {
-        $uri = "RefreshToken?token=".urlencode($this->config->getRefreshToken());
-        $result = $this->makePostRequest($uri, [], true);
+        if (is_null($this->config->getRefreshToken())) {
+            return false;
+        }
+
+        $uri = "RefreshToken?token=" . urlencode($this->config->getRefreshToken());
+        $result = $this->makeRequest("POST", $uri, [], true);
         if (! isset($result['Jwt'], $result['ExpiresIn'])) {
             return false;
         }
 
         $this->config->setJwtToken($result['Jwt']);
-        $this->config->setJwtExpires($this->getDateFromExpiry($result['ExpiresIn']));
+        $this->config->setJwtExpires($this->getTimeFromExpiry($result['ExpiresIn']));
         $this->config->saveConfig();
 
         return true;
@@ -51,28 +59,62 @@ class LaravelViper
     {
         $this->checkToken();
 
-        return $this->makeGetRequest("Persons", true);
+        return $this->makeRequest("GET", "Persons", null, true);
     }
 
     public function getSinglePerson(int $userId): array
     {
         $this->checkToken();
 
-        return $this->makeGetRequest("Persons/$userId", true);
+        return $this->makeRequest("GET", "Persons/$userId", null, true);
     }
 
     public function updatePerson(int $userId, array $userData): array
     {
         $this->checkToken();
 
-        return $this->makePatchRequest("Persons/$userId", $userData, true);
+        return $this->makeRequest("PATCH", "Persons/$userId", $userData, true);
     }
 
     public function createPerson(array $userData): array
     {
         $this->checkToken();
 
-        return $this->makePostRequest("Persons", $userData, true);
+        return $this->makeRequest("POST", "Persons", $userData, true);
+    }
+
+    public function checkToken(): void
+    {
+        if (
+            empty($this->config->getApiKey())
+            || empty($this->config->getJwtToken())
+            || empty($this->config->getRefreshToken())
+        ) {
+            return;
+        }
+
+        if (! $this->config->isTokenValid()) {
+            $this->refreshToken();
+        }
+    }
+
+    public function makeRequest(string $method, string $uri, ?array $body, bool $includeJwt = false): array
+    {
+        try {
+            $response = $this->client->request($method, $uri, array_merge($this->getClientOptions($includeJwt), $this->getJsonBody($body)));
+            if ($response->getStatusCode() !== 200) {
+                return [];
+            }
+
+            $result = $this->convertIncomingResponseToArray($response);
+            if (! $result) {
+                return [];
+            }
+
+            return $result;
+        } catch (GuzzleException) {
+            return [];
+        }
     }
 
     private function getClientOptions(bool $includeJwt = false): array
@@ -93,84 +135,34 @@ class LaravelViper
         return $options;
     }
 
-    public function makeGetRequest(string $uri, bool $includeJwt = false): array
-    {
-        try {
-            $response = $this->client->get($uri, $this->getClientOptions($includeJwt));
-            if ($response->getStatusCode() !== 200) {
-                return [];
-            }
-
-            $result = self::convertIncomingResponseToArray($response);
-            if (! $result) {
-                return [];
-            }
-
-            return $result;
-        } catch (GuzzleException) {
-            return [];
-        }
-    }
-
-    public function makePostRequest(string $uri, array $jsonBody, bool $includeJwt = false): array
-    {
-        try {
-            $response = $this->client->post($uri, array_merge($this->getClientOptions($includeJwt), ['json' => $jsonBody]));
-            if ($response->getStatusCode() !== 200) {
-                return [];
-            }
-
-            $result = self::convertIncomingResponseToArray($response);
-            if (! $result) {
-                return [];
-            }
-
-            return $result;
-        } catch (GuzzleException) {
-            return [];
-        }
-    }
-
-    public function makePatchRequest(string $uri, array $jsonBody, bool $includeJwt = false): array
-    {
-        try {
-            $response = $this->client->patch($uri, array_merge($this->getClientOptions($includeJwt), ['json' => $jsonBody]));
-            if ($response->getStatusCode() !== 200) {
-                return [];
-            }
-
-            $result = self::convertIncomingResponseToArray($response);
-            if (! $result) {
-                return [];
-            }
-
-            return $result;
-        } catch (GuzzleException) {
-            return [];
-        }
-    }
-
-    private static function convertIncomingResponseToArray(ResponseInterface $response): ?array
+    private function convertIncomingResponseToArray(ResponseInterface $response): ?array
     {
         try {
             $response->getBody()->rewind();
             $body = $response->getBody()->getContents();
 
-            return json_decode($body, true, 10, JSON_THROW_ON_ERROR);
+            return (array) json_decode($body, true, 10, JSON_THROW_ON_ERROR);
         } catch (Exception) {
             return null;
         }
     }
 
-    private function getDateFromExpiry(int $expiresIn): int
+    private function getTimeFromExpiry(int $expiresIn): int
     {
-        return strtotime("+$expiresIn seconds");
+        $time = strtotime("+$expiresIn seconds");
+        if ($time === false) {
+            return time();
+        }
+
+        return $time;
     }
 
-    public function checkToken()
+    private function getJsonBody(?array $body): array
     {
-        if (! $this->config->isTokenValid()) {
-            $this->refreshToken();
+        if (is_null($body)) {
+            return [];
         }
+
+        return ['json' => $body];
     }
 }

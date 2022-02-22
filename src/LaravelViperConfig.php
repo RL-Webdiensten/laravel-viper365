@@ -5,35 +5,23 @@ namespace RlWebdiensten\LaravelViper;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use RlWebdiensten\LaravelViper\Contracts\ViperConfig;
+use stdClass;
 
 class LaravelViperConfig implements ViperConfig
 {
-    protected string $apiKey;
+    protected ?string $apiKey;
     protected ?string $jwtToken;
     protected ?int $jwtExpires;
     protected ?string $refreshToken;
 
-    public function __construct($apiKey, $jwtToken = null, $jwtExpires = null, $refreshToken = null)
+    public function __construct(?string $apiKey = null, ?string $jwtToken = null, ?int $jwtExpires = null, ?string $refreshToken = null)
     {
-        $this->apiKey = $apiKey;
         $config = $this->loadConfig();
 
+        $this->apiKey = $apiKey;
         $this->jwtToken = $jwtToken ?? $config->jwt ?? null;
         $this->jwtExpires = $jwtExpires ?? $config->expires ?? null;
         $this->refreshToken = $refreshToken ?? $config->refresh_token ?? null;
-    }
-
-    private function loadConfig(): object
-    {
-        $config = '{}';
-
-        if (Storage::exists('viper.api.json')) {
-            $config = Storage::get(
-                'viper.api.json',
-            );
-        }
-
-        return (object) json_decode($config, false);
     }
 
     /**
@@ -61,41 +49,41 @@ class LaravelViperConfig implements ViperConfig
     }
 
     /**
-     * @param int|null $refreshExpires
+     * @param int|null $jwtExpires
      */
-    public function setJwtExpires(?int $refreshExpires): void
+    public function setJwtExpires(?int $jwtExpires): void
     {
-        $this->jwtExpires = $refreshExpires;
+        $this->jwtExpires = $jwtExpires;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getApiKey(): string
+    public function getApiKey(): ?string
     {
         return $this->apiKey;
     }
 
     /**
-     * @return int|mixed|null
+     * @return int|null
      */
-    public function getJwtExpires(): mixed
+    public function getJwtExpires(): ?int
     {
         return $this->jwtExpires;
     }
 
     /**
-     * @return mixed|string|null
+     * @return string|null
      */
-    public function getJwtToken(): mixed
+    public function getJwtToken(): ?string
     {
         return $this->jwtToken;
     }
 
     /**
-     * @return mixed|string|null
+     * @return string|null
      */
-    public function getRefreshToken(): mixed
+    public function getRefreshToken(): ?string
     {
         return $this->refreshToken;
     }
@@ -109,19 +97,34 @@ class LaravelViperConfig implements ViperConfig
 
     public function getTokenExpireDate(): Carbon
     {
-        if (! $this->jwtToken) {
+        if (! $this->jwtExpires) {
             return Carbon::now();
         }
 
-        return Carbon::createFromTimestamp($this->jwtToken);
+        return Carbon::createFromTimestamp($this->jwtExpires);
     }
 
     public function saveConfig(): void
     {
         $config = $this->loadConfig();
+
         $config->refresh_token = $this->refreshToken;
         $config->jwt = $this->jwtToken;
         $config->expires = $this->jwtExpires;
-        Storage::put('viper.api.json', json_encode($config));
+
+        Storage::put('viper.api.json', (string) json_encode($config));
+    }
+
+    private function loadConfig(): stdClass
+    {
+        $config = '{}';
+
+        if (Storage::exists('viper.api.json')) {
+            $config = Storage::get(
+                'viper.api.json',
+            );
+        }
+
+        return (object) json_decode($config ?? '{}', false);
     }
 }

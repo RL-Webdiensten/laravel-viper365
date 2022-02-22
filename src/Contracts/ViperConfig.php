@@ -4,19 +4,19 @@ namespace RlWebdiensten\LaravelViper\Contracts;
 
 interface ViperConfig
 {
-    public function getRefreshToken();
+    public function getRefreshToken(): ?string;
 
-    public function getApiKey();
+    public function getApiKey(): ?string;
 
-    public function getJwtToken();
+    public function getJwtToken(): ?string;
 
-    public function setRefreshToken(string $RefreshToken);
+    public function setRefreshToken(?string $refreshToken): void;
 
-    public function setJwtToken(string $Jwt);
+    public function setJwtToken(string $jwtToken): void;
 
-    public function setJwtExpires(int $getDateFromExpiry);
+    public function setJwtExpires(int $getDateFromExpiry): void;
 
-    public function saveConfig();
+    public function saveConfig(): void;
 
     public function isTokenValid(): bool;
 }
