@@ -4,11 +4,11 @@ use GuzzleHttp\Client;
 use RlWebdiensten\LaravelViper\Contracts\ViperConfig;
 use RlWebdiensten\LaravelViper\LaravelViper;
 
-it('registers facade', function() {
+it('registers facade', function () {
     expect(app()->make('RlWebdiensten\LaravelViper\LaravelViper'))->toBeInstanceOf(LaravelViper::class);
 });
 
-it('can check if token is valid', function() {
+it('can check if token is valid', function () {
     $mock = Mockery::mock(ViperConfig::class);
     $mock->shouldReceive('isTokenValid')
         ->once()
@@ -18,7 +18,7 @@ it('can check if token is valid', function() {
     $service->checkToken();
 });
 
-it('can check if token is valid facade', function() {
+it('can check if token is valid facade', function () {
     $mock = Mockery::mock(ViperConfig::class);
     $mock->shouldReceive('isTokenValid')
         ->once()
