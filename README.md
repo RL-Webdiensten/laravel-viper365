@@ -1,8 +1,8 @@
 # Viper365 API client wrapper for Laravel
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/rlwebdiensten/laravel-viper.svg?style=flat-square)](https://packagist.org/packages/rlwebdiensten/laravel-viper)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/rlwebdiensten/laravel-viper/run-tests?label=tests)](https://github.com/rlwebdiensten/laravel-viper/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/rlwebdiensten/laravel-viper/Check%20&%20fix%20styling?label=code%20style)](https://github.com/rlwebdiensten/laravel-viper/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/RL-Webdiensten/laravel-viper365/run-tests?label=tests)](https://github.com/RL-Webdiensten/laravel-viper365/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/RL-Webdiensten/laravel-viper365/Check%20&%20fix%20styling?label=code%20style)](https://github.com/RL-Webdiensten/laravel-viper365/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/rlwebdiensten/laravel-viper.svg?style=flat-square)](https://packagist.org/packages/rlwebdiensten/laravel-viper)
 
 A simple Viper365 API client wrapper for Laravel.
