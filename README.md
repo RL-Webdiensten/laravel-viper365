@@ -37,7 +37,7 @@ protected LaravelViper $viperService;
 
 function __construct()
 {
-    $this->viperService = app()->make('RlWebdiensten\LaravelViper\LaravelViper');;
+    $this->viperService = app()->make('RlWebdiensten\LaravelViper\LaravelViper');
 }
 ```
 
