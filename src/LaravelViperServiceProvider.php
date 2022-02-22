@@ -18,7 +18,7 @@ class LaravelViperServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('laravel-viper')
-            ->hasConfigFile()
+            ->hasConfigFile("viper")
             ->hasCommand(ViperLogin::class)
             ->hasCommand(ViperRefresh::class);
 

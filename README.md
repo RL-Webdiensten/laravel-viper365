@@ -15,13 +15,6 @@ You can install the package via composer:
 composer require rlwebdiensten/laravel-viper
 ```
 
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --tag="laravel-viper-migrations"
-php artisan migrate
-```
-
 You can publish the config file with:
 
 ```bash
@@ -32,20 +25,28 @@ This is the contents of the published config file:
 
 ```php
 return [
+    'api_token' => env('VIPER_API_TOKEN', ''),
 ];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="laravel-viper-views"
 ```
 
 ## Usage
 
+Using the constructor
 ```php
-$laravelViper = new RlWebdiensten\LaravelViper();
-echo $laravelViper->echoPhrase('Hello, RlWebdiensten!');
+protected LaravelViper $viperService;
+
+function __construct()
+{
+    $this->viperService = app()->make('RlWebdiensten\LaravelViper\LaravelViper');;
+}
+```
+
+Using dependency injection
+```php
+function __construct(\RlWebdiensten\LaravelViper\LaravelViper $viperService)
+{
+    $this->viperService = $viperService;
+}
 ```
 
 ## Testing
