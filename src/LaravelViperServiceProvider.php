@@ -4,6 +4,7 @@ namespace RlWebdiensten\LaravelViper;
 
 use RlWebdiensten\LaravelViper\Commands\ViperLogin;
 use RlWebdiensten\LaravelViper\Commands\ViperRefresh;
+use RlWebdiensten\LaravelViper\Contracts\ViperConfig;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -22,10 +23,11 @@ class LaravelViperServiceProvider extends PackageServiceProvider
             ->hasCommand(ViperLogin::class)
             ->hasCommand(ViperRefresh::class);
 
-        $this->app->singleton(LaravelViper::class, function () {
-            $config = new LaravelViperConfig(config('viper.api_token'));
+        $this->app->alias(LaravelViper::class, 'laravel-viper');
 
-            return new LaravelViper($config);
+        $this->app->singleton(ViperConfig::class, function () {
+            return new LaravelViperConfig(config('viper.api_token'));
         });
+        
     }
 }
