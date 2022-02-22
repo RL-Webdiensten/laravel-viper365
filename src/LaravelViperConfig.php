@@ -18,9 +18,9 @@ class LaravelViperConfig implements ViperConfig
         $this->apiKey = $apiKey;
         $config = $this->loadConfig();
 
-        $this->jwtToken = $jwtToken ?? $config->jwt;
-        $this->jwtExpires = $jwtExpires ?? $config->expires;
-        $this->refreshToken = $refreshToken ?? $config->refresh_token;
+        $this->jwtToken = $jwtToken ?? $config->jwt ?? null;
+        $this->jwtExpires = $jwtExpires ?? $config->expires ?? null;
+        $this->refreshToken = $refreshToken ?? $config->refresh_token ?? null;
     }
 
     private function loadConfig(): object
