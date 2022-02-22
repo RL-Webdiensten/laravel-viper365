@@ -10,7 +10,12 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "RL-Webdiensten",
+            "name": "Fabian Dingemans",
+            "email": "fabian@rl-webdiensten.nl",
+            "role": "Developer"
+        },
+        {
+            "name": "Rick Lambrechts",
             "email": "rick@rl-webdiensten.nl",
             "role": "Developer"
         }
