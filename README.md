@@ -29,21 +29,39 @@ return [
 ];
 ```
 
-## Usage
-
-Using the constructor
-```php
-function __construct()
-{
-    $this->viperService = app()->make('RlWebdiensten\LaravelViper\LaravelViper');
-}
+After you have set the VIPER_API_TOKEN you can login with:
 ```
+php artisan viper:login
+```
+
+Next you need to schedule the refresh command so the accessToken is refreshed every half hour:
+```
+php artisan viper:refresh
+```
+
+You can put the above command in your cronjob or schedule it with Laravel:
+```
+$schedule->command('viper:refresh')->everyFiveMinutes();
+```
+
+## Usage
 
 Using dependency injection
 ```php
 function __construct(\RlWebdiensten\LaravelViper\LaravelViper $viperService)
 {
     $this->viperService = $viperService;
+
+    // e.g.
+    $persons = $this->viperService->getAllPersons();
+}
+```
+
+Using the facade
+```php
+function someMethod()
+{
+    $persons = LaravelViper::getAllPersons();
 }
 ```
 
@@ -67,7 +85,8 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [RL-Webdiensten](https://github.com/RL-Webdiensten)
+- [Fabian Dingemans](https://github.com/faab007)
+- [Rick Lambrechts](https://github.com/ricklambrechts)
 - [All Contributors](../../contributors)
 
 ## License
