@@ -54,21 +54,25 @@ class LaravelViper
 
     public function getAllPersons(): array
     {
+        $this->checkToken();
         return $this->makeGetRequest("Persons", true);
     }
 
     public function getSinglePerson(int $userId): array
     {
+        $this->checkToken();
         return $this->makeGetRequest("Persons/$userId", true);
     }
 
     public function updatePerson(int $userId, array $userData): array
     {
+        $this->checkToken();
         return $this->makePatchRequest("Persons/$userId", $userData, true);
     }
 
     public function createPerson(array $userData): array
     {
+        $this->checkToken();
         return $this->makePostRequest("Persons", $userData, true);
     }
 
