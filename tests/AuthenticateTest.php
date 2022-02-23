@@ -64,8 +64,9 @@ it('expects that config is updated on authenticate user', function () {
     $viperConfig->shouldReceive('getApiKey')->andReturn('test')->once();
     $viperConfig->shouldReceive('setRefreshToken')->withArgs(['refreshtoken'])->once();
     $viperConfig->shouldReceive('setJwtToken')->withArgs(['jwttoken'])->once();
-    $viperConfig->shouldReceive('setJwtExpires')->withArgs(function($time) {
+    $viperConfig->shouldReceive('setJwtExpires')->withArgs(function ($time) {
         $expectedTime = strtotime("+1800 seconds");
+
         return $time >= $expectedTime && $time <= ($expectedTime + 5);
     })->once();
     $viperConfig->shouldReceive('saveConfig')->once();
