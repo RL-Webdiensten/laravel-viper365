@@ -16,14 +16,11 @@ class LaravelViper
 
     public function authenticateUser(string $username, string $password): bool
     {
-        $result = $this->makeRequest(
-            "POST",
-            "AuthenticateUser",
-            [
-                "Username" => $username,
-                "Password" => $password,
-            ]
-        );
+        $result = $this->makeRequest("POST", "AuthenticateUser", [
+            "Username" => $username,
+            "Password" => $password,
+        ]);
+
         if (! isset($result['RefreshToken'], $result['Jwt'], $result['ExpiresIn'])) {
             return false;
         }
@@ -57,30 +54,24 @@ class LaravelViper
 
     public function getAllPersons(): array
     {
-        $this->checkToken();
-
-        return $this->makeRequest("GET", "Persons", null, true);
+        return $this->makeRequestWithToken("GET", "Persons");
     }
 
     public function getSinglePerson(int $userId): array
     {
         $this->checkToken();
 
-        return $this->makeRequest("GET", "Persons/$userId", null, true);
+        return $this->makeRequestWithToken("GET", "Persons/$userId");
     }
 
     public function updatePerson(int $userId, array $userData): array
     {
-        $this->checkToken();
-
-        return $this->makeRequest("PATCH", "Persons/$userId", $userData, true);
+        return $this->makeRequestWithToken("PATCH", "Persons/$userId", $userData);
     }
 
     public function createPerson(array $userData): array
     {
-        $this->checkToken();
-
-        return $this->makeRequest("POST", "Persons", $userData, true);
+        return $this->makeRequestWithToken("POST", "Persons", $userData);
     }
 
     public function checkToken(): void
@@ -98,7 +89,14 @@ class LaravelViper
         }
     }
 
-    public function makeRequest(string $method, string $uri, ?array $body, bool $includeJwt = false): array
+    private function makeRequestWithToken(string $method, string $uri, ?array $body = null): array
+    {
+        $this->checkToken();
+
+        return $this->makeRequest($method, $uri, $body);
+    }
+
+    private function makeRequest(string $method, string $uri, ?array $body = null, bool $includeJwt = false): array
     {
         try {
             $response = $this->client->request($method, $uri, array_merge($this->getClientOptions($includeJwt), $this->getJsonBody($body)));
@@ -157,7 +155,7 @@ class LaravelViper
         return $time;
     }
 
-    private function getJsonBody(?array $body): array
+    private function getJsonBody(?array $body = null): array
     {
         if (is_null($body)) {
             return [];
