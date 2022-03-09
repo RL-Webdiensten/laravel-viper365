@@ -15,18 +15,11 @@ You can install the package via composer:
 composer require rlwebdiensten/laravel-viper
 ```
 
-You can publish the config file with:
+These are the available ENV variables:
 
-```bash
-php artisan vendor:publish --tag="laravel-viper-config"
 ```
-
-This is the contents of the published config file:
-
-```php
-return [
-    'api_token' => env('VIPER_API_TOKEN', ''),
-];
+VIPER_API_ENDPOINT="" // Not required - default "basic-api.viper365.nl"
+VIPER_API_TOKEN=""    // Required
 ```
 
 After you have set the VIPER_API_TOKEN you can login with:
