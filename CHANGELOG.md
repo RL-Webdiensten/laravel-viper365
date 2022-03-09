@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-viper` will be documented in this file.
 
+## 1.0.3 - 2022-03-09
+
+- refresh command now always refreshes token and shows result
+
 ## 1.0.2 - 2022-03-09
 
 ## What's Changed
