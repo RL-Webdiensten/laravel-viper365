@@ -41,7 +41,12 @@ class ViperRefresh extends Command
      */
     public function handle()
     {
-        $this->Service->checkToken();
+        $result = $this->Service->refreshToken();
+        if ($result) {
+            $this->info("Successfully refreshed Viper365 token!");
+        } else {
+            $this->error("Could not refresh Viper365 token, please login!");
+        }
 
         return 0;
     }
