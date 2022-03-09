@@ -50,10 +50,12 @@ class ViperRefresh extends Command
             } else {
                 $this->error("Could not refresh Viper365 token, please login!");
             }
+
             return 0;
         }
 
         $this->service->checkToken();
+
         return 0;
     }
 }
