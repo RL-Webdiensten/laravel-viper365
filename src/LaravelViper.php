@@ -118,7 +118,7 @@ class LaravelViper
     private function getClientOptions(bool $includeJwt = false): array
     {
         $options = [
-            'base_uri' => 'https://basic-api.viper365.net/v2/',
+            'base_uri' => 'https://' . config('viper.api_endpoint') . '/v2/',
             'headers' => [
                 'Accept' => 'application/json',
                 'Authorization-ApiKey' => $this->config->getApiKey(),
