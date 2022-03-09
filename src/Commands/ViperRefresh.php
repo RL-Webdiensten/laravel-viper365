@@ -7,14 +7,15 @@ use RlWebdiensten\LaravelViper\LaravelViper;
 
 class ViperRefresh extends Command
 {
-    private LaravelViper $Service;
+    private LaravelViper $service;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'viper:refresh';
+    protected $signature = 'viper:refresh
+                            {--force : Force refresh of token}';
 
     /**
      * The console command description.
@@ -30,8 +31,8 @@ class ViperRefresh extends Command
      */
     public function __construct(LaravelViper $viperService)
     {
-        $this->Service = $viperService;
         parent::__construct();
+        $this->service = $viperService;
     }
 
     /**
@@ -41,13 +42,18 @@ class ViperRefresh extends Command
      */
     public function handle()
     {
-        $result = $this->Service->refreshToken();
-        if ($result) {
-            $this->info("Successfully refreshed Viper365 token!");
-        } else {
-            $this->error("Could not refresh Viper365 token, please login!");
+        $force = $this->option('force');
+        if ($force) {
+            $result = $this->service->refreshToken();
+            if ($result) {
+                $this->info("Successfully refreshed Viper365 token!");
+            } else {
+                $this->error("Could not refresh Viper365 token, please login!");
+            }
+            return 0;
         }
 
+        $this->service->checkToken();
         return 0;
     }
 }
