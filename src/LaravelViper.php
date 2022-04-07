@@ -92,26 +92,23 @@ class LaravelViper
     private function makeRequestWithToken(string $method, string $uri, ?array $body = null): array
     {
         $this->checkToken();
-
         return $this->makeRequest($method, $uri, $body, true);
     }
 
+    /**
+     * @throws Exception
+     */
     private function makeRequest(string $method, string $uri, ?array $body = null, bool $includeJwt = false): array
     {
         try {
             $response = $this->client->request($method, $uri, array_merge($this->getClientOptions($includeJwt), $this->getJsonBody($body)));
             if ($response->getStatusCode() !== 200) {
-                return [];
+                throw new Exception("Request failed with status code " . $response->getStatusCode());
             }
 
-            $result = $this->convertIncomingResponseToArray($response);
-            if (! $result) {
-                return [];
-            }
-
-            return $result;
-        } catch (GuzzleException) {
-            return [];
+            return $this->convertIncomingResponseToArray($response);
+        } catch (GuzzleException $e) {
+            throw new Exception("Request failed: ". $e->getMessage());
         }
     }
 
@@ -133,6 +130,9 @@ class LaravelViper
         return $options;
     }
 
+    /**
+     * @throws Exception
+     */
     private function convertIncomingResponseToArray(ResponseInterface $response): ?array
     {
         try {
@@ -141,7 +141,7 @@ class LaravelViper
 
             return (array) json_decode($body, true, 10, JSON_THROW_ON_ERROR);
         } catch (Exception) {
-            return null;
+            throw new Exception("Response was not valid JSON");
         }
     }
 
@@ -155,10 +155,13 @@ class LaravelViper
         return $time;
     }
 
+    /**
+     * @throws Exception
+     */
     private function getJsonBody(?array $body = null): array
     {
         if (is_null($body)) {
-            return [];
+            throw new Exception("Body cannot be null");
         }
 
         return ['json' => $body];
