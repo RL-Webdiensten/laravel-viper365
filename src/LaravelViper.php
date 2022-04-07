@@ -92,6 +92,7 @@ class LaravelViper
     private function makeRequestWithToken(string $method, string $uri, ?array $body = null): array
     {
         $this->checkToken();
+
         return $this->makeRequest($method, $uri, $body, true);
     }
 
