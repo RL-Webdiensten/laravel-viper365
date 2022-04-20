@@ -7,6 +7,13 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use RlWebdiensten\LaravelViper\Contracts\ViperConfig;
+use RlWebdiensten\LaravelViper\Exceptions\ConnectionFailedException;
+use RlWebdiensten\LaravelViper\Exceptions\InvalidApiKeyException;
+use RlWebdiensten\LaravelViper\Exceptions\InvalidResponseException;
+use RlWebdiensten\LaravelViper\Exceptions\InvalidTokenException;
+use RlWebdiensten\LaravelViper\Exceptions\RateLimitException;
+use RlWebdiensten\LaravelViper\Exceptions\RequestInvalidException;
+use RlWebdiensten\LaravelViper\Exceptions\ServerErrorException;
 
 class LaravelViper
 {
@@ -14,6 +21,15 @@ class LaravelViper
     {
     }
 
+    /**
+     * @throws ConnectionFailedException
+     * @throws ServerErrorException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
     public function authenticateUser(string $username, string $password): bool
     {
         $result = $this->makeRequest("POST", "AuthenticateUser", [
@@ -33,6 +49,15 @@ class LaravelViper
         return true;
     }
 
+    /**
+     * @throws ServerErrorException
+     * @throws ConnectionFailedException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
     public function refreshToken(): bool
     {
         if (is_null($this->config->getRefreshToken())) {
@@ -52,11 +77,29 @@ class LaravelViper
         return true;
     }
 
+    /**
+     * @throws ServerErrorException
+     * @throws ConnectionFailedException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
     public function getAllPersons(): array
     {
         return $this->makeRequestWithToken("GET", "Persons");
     }
 
+    /**
+     * @throws ConnectionFailedException
+     * @throws ServerErrorException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws RequestInvalidException
+     * @throws InvalidApiKeyException
+     */
     public function getSinglePerson(int $userId): array
     {
         $this->checkToken();
@@ -64,14 +107,74 @@ class LaravelViper
         return $this->makeRequestWithToken("GET", "Persons/$userId");
     }
 
+    /**
+     * @throws ConnectionFailedException
+     * @throws ServerErrorException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
     public function updatePerson(int $userId, array $userData): array
     {
         return $this->makeRequestWithToken("PATCH", "Persons/$userId", $userData);
     }
 
+    /**
+     * @throws ServerErrorException
+     * @throws ConnectionFailedException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
     public function createPerson(array $userData): array
     {
         return $this->makeRequestWithToken("POST", "Persons", $userData);
+    }
+
+    /**
+     * @throws ServerErrorException
+     * @throws ConnectionFailedException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
+    public function getPersonRoles(int $personId): array
+    {
+        return $this->makeRequestWithToken("GET", "Persons/$personId/Roles");
+    }
+
+    /**
+     * @throws ServerErrorException
+     * @throws ConnectionFailedException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
+    public function addPersonRole(int $personId, string $roleName): array
+    {
+        return $this->makeRequestWithToken("POST", "Persons/$personId/AddRole/$roleName");
+    }
+
+    /**
+     * @throws ServerErrorException
+     * @throws ConnectionFailedException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
+    public function removePersonRole(int $personId, string $roleName): array
+    {
+        return $this->makeRequestWithToken("POST", "Persons/$personId/RemoveRole/$roleName");
     }
 
     public function checkToken(): void
@@ -89,6 +192,15 @@ class LaravelViper
         }
     }
 
+    /**
+     * @throws ServerErrorException
+     * @throws ConnectionFailedException
+     * @throws InvalidTokenException
+     * @throws RateLimitException
+     * @throws InvalidResponseException
+     * @throws InvalidApiKeyException
+     * @throws RequestInvalidException
+     */
     private function makeRequestWithToken(string $method, string $uri, ?array $body = null): array
     {
         $this->checkToken();
@@ -96,19 +208,33 @@ class LaravelViper
     }
 
     /**
-     * @throws Exception
+     * @throws RateLimitException
+     * @throws InvalidApiKeyException
+     * @throws InvalidTokenException
+     * @throws RequestInvalidException
+     * @throws ServerErrorException
+     * @throws ConnectionFailedException
+     * @throws InvalidResponseException
      */
     private function makeRequest(string $method, string $uri, ?array $body = null, bool $includeJwt = false): array
     {
         try {
             $response = $this->client->request($method, $uri, array_merge($this->getClientOptions($includeJwt), $this->getJsonBody($body)));
-            if ($response->getStatusCode() !== 200) {
-                throw new Exception("Request failed with status code " . $response->getStatusCode());
+
+            if  ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+                return $this->convertIncomingResponseToArray($response);
             }
 
-            return $this->convertIncomingResponseToArray($response);
+            match ($response->getStatusCode()) {
+                400 => throw new RequestInvalidException,
+                401 => throw new InvalidTokenException,
+                403 => throw new InvalidApiKeyException,
+                429 => throw new RateLimitException,
+                500 => throw new ServerErrorException,
+                default => throw new InvalidResponseException()
+            };
         } catch (GuzzleException $e) {
-            throw new Exception("Request failed: ". $e->getMessage());
+            throw new ConnectionFailedException($e->getMessage());
         }
     }
 
@@ -131,7 +257,7 @@ class LaravelViper
     }
 
     /**
-     * @throws Exception
+     * @throws InvalidResponseException
      */
     private function convertIncomingResponseToArray(ResponseInterface $response): ?array
     {
@@ -141,7 +267,7 @@ class LaravelViper
 
             return (array) json_decode($body, true, 10, JSON_THROW_ON_ERROR);
         } catch (Exception) {
-            throw new Exception("Response was not valid JSON");
+            throw new InvalidResponseException();
         }
     }
 
@@ -155,15 +281,8 @@ class LaravelViper
         return $time;
     }
 
-    /**
-     * @throws Exception
-     */
     private function getJsonBody(?array $body = null): array
     {
-        if (is_null($body)) {
-            throw new Exception("Body cannot be null");
-        }
-
         return ['json' => $body];
     }
 }
