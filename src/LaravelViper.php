@@ -222,16 +222,16 @@ class LaravelViper
         try {
             $response = $this->client->request($method, $uri, array_merge($this->getClientOptions($includeJwt), $this->getJsonBody($body)));
 
-            if  ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+            if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
                 return $this->convertIncomingResponseToArray($response);
             }
 
             match ($response->getStatusCode()) {
-                400 => throw new RequestInvalidException,
-                401 => throw new InvalidTokenException,
-                403 => throw new InvalidApiKeyException,
-                429 => throw new RateLimitException,
-                500 => throw new ServerErrorException,
+                400 => throw new RequestInvalidException(),
+                401 => throw new InvalidTokenException(),
+                403 => throw new InvalidApiKeyException(),
+                429 => throw new RateLimitException(),
+                500 => throw new ServerErrorException(),
                 default => throw new InvalidResponseException()
             };
         } catch (GuzzleException $e) {
