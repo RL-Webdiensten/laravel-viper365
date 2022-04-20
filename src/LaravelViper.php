@@ -226,7 +226,7 @@ class LaravelViper
                 return $this->convertIncomingResponseToArray($response);
             }
 
-            match ($response->getStatusCode()) {
+            return match ($response->getStatusCode()) {
                 400 => throw new RequestInvalidException,
                 401 => throw new InvalidTokenException,
                 403 => throw new InvalidApiKeyException,
@@ -260,7 +260,7 @@ class LaravelViper
     /**
      * @throws InvalidResponseException
      */
-    private function convertIncomingResponseToArray(ResponseInterface $response): ?array
+    private function convertIncomingResponseToArray(ResponseInterface $response): array
     {
         try {
             $response->getBody()->rewind();
