@@ -227,11 +227,11 @@ class LaravelViper
             }
 
             return match ($response->getStatusCode()) {
-                400 => throw new RequestInvalidException,
-                401 => throw new InvalidTokenException,
-                403 => throw new InvalidApiKeyException,
-                429 => throw new RateLimitException,
-                500 => throw new ServerErrorException,
+                400 => throw new RequestInvalidException(),
+                401 => throw new InvalidTokenException(),
+                403 => throw new InvalidApiKeyException(),
+                429 => throw new RateLimitException(),
+                500 => throw new ServerErrorException(),
                 default => throw new InvalidResponseException()
             };
         } catch (GuzzleException $e) {
