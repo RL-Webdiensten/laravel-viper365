@@ -4,6 +4,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Config;
 use RlWebdiensten\LaravelViper\Contracts\ViperConfig;
+use RlWebdiensten\LaravelViper\Exceptions\InvalidResponseException;
+use RlWebdiensten\LaravelViper\Exceptions\RequestInvalidException;
 use RlWebdiensten\LaravelViper\LaravelViper;
 
 it('can authenticate the user', function () {
@@ -27,7 +29,7 @@ it('can authenticate the user', function () {
     expect(RlWebdiensten\LaravelViper\Facades\LaravelViper::authenticateUser('test', 'test'))->toBeTrue();
 });
 
-it('does not authenticate when we get an 400 error', function () {
+it('it throws when we get an 400 error', function () {
     $guzzleMock = Mockery::mock(Client::class);
     $guzzleMock
         ->shouldReceive('request')
@@ -40,10 +42,10 @@ it('does not authenticate when we get an 400 error', function () {
 
     Config::set('viper.api_token', 'TEST');
 
-    expect(RlWebdiensten\LaravelViper\Facades\LaravelViper::authenticateUser('test', 'test'))->toBeFalse();
-});
+    RlWebdiensten\LaravelViper\Facades\LaravelViper::authenticateUser('test', 'test');
+})->throws(RequestInvalidException::class);
 
-it('does not authenticate when we get an empty body', function () {
+it('it throws exception when we get an empty body', function () {
     $guzzleMock = Mockery::mock(Client::class);
     $guzzleMock
         ->shouldReceive('request')
@@ -56,8 +58,8 @@ it('does not authenticate when we get an empty body', function () {
 
     Config::set('viper.api_token', 'TEST');
 
-    expect(RlWebdiensten\LaravelViper\Facades\LaravelViper::authenticateUser('test', 'test'))->toBeFalse();
-});
+    RlWebdiensten\LaravelViper\Facades\LaravelViper::authenticateUser('test', 'test');
+})->throws(InvalidResponseException::class);
 
 it('expects that config is updated on authenticate user', function () {
     $viperConfig = Mockery::mock(ViperConfig::class);
