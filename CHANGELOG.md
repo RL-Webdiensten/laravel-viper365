@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-viper` will be documented in this file.
 
+## 1.0.6 - 2022-04-21
+
+- Added exceptions
+
 ## 1.0.5 - 2022-03-09
 
 - Added viper endpoint option
